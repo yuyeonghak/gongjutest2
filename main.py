@@ -5,11 +5,16 @@ import math
 import re
 
 import numpy as np
-from openai import OpenAI
 import pandas as pd
 import plotly.graph_objects as go
 import requests
 import streamlit as st
+
+try:
+    from openai import OpenAI
+except ModuleNotFoundError:
+    # requirements.txt에 openai가 빠져 있어도 지도 앱 전체가 중단되지 않게 합니다.
+    OpenAI = None
 
 
 # ---------------------------------------------------------------------------
@@ -106,7 +111,7 @@ AGEING_COLORS = ["#FFF4E6", "#FDD8B3", "#F5A36C", "#D95F4B", "#7F1D1D"]
 
 
 st.set_page_config(
-    page_title="공주를 부탁해 | 나와 닮은 지역 찾기",
+    page_title="동네결 | 나와 닮은 지역 찾기",
     page_icon="💗",
     layout="wide",
     initial_sidebar_state="collapsed",
@@ -1136,7 +1141,7 @@ def initialize_state():
             {
                 "role": "assistant",
                 "content": (
-                    "안녕하세요, 공주를 부탁해 AI 가이드 **다온**이에요. "
+                    "안녕하세요, 동네결 AI 가이드 **다온**이에요. "
                     "지역 추천 결과를 함께 읽어보고, 어떤 동네가 잘 맞을지 "
                     "차분하게 정리해 드릴게요. 무엇이 궁금하세요?"
                 ),
@@ -1180,7 +1185,7 @@ def reset_chat():
         {
             "role": "assistant",
             "content": (
-                "새 대화를 시작할게요. 저는 공주를 부탁해 AI 가이드 **다온**이에요. "
+                "새 대화를 시작할게요. 저는 동네결 AI 가이드 **다온**이에요. "
                 "추천 결과나 지역의 연령 구성에 관해 편하게 물어보세요."
             ),
         }
@@ -1266,7 +1271,7 @@ def build_ai_system_prompt(
 
     app_context = "\n".join(context_lines)
     return f"""
-너는 지역 추천 서비스 '공주를 부탁해'의 AI 상담사 '다온'이다.
+너는 지역 추천 서비스 '동네결'의 AI 상담사 '다온'이다.
 
 [역할과 성격]
 - 따뜻하고 현실적이며 판단을 강요하지 않는 한국어 지역 상담사다.
@@ -1348,6 +1353,7 @@ def render_ai_chat(
             reset_chat()
 
     api_key = get_solar_api_key()
+    ai_ready = OpenAI is not None and bool(api_key)
     messages_container = st.container(height=610, border=True)
     with messages_container:
         for message in st.session_state["chat_messages"]:
@@ -1355,7 +1361,13 @@ def render_ai_chat(
             with st.chat_message(message["role"], avatar=avatar):
                 st.markdown(message["content"])
 
-        if not api_key:
+        if OpenAI is None:
+            st.error(
+                "`requirements.txt`에 `openai`를 추가한 뒤 "
+                "앱을 재부팅해 주세요.",
+                icon="📦",
+            )
+        elif not api_key:
             st.warning(
                 "AI 상담을 사용하려면 Streamlit 비밀 금고에 "
                 "`SOLAR_API_KEY`를 등록해 주세요.",
@@ -1366,7 +1378,7 @@ def render_ai_chat(
         "추천 지역에 관해 물어보세요",
         key="solar_chat_input",
         max_chars=1000,
-        disabled=not api_key,
+        disabled=not ai_ready,
     )
     if not prompt:
         return
@@ -1436,7 +1448,7 @@ def render_brand():
             <div class="brand-wrap">
                 <div class="brand-mark">♥</div>
                 <div>
-                    <div class="brand-name">공주를 부탁해</div>
+                    <div class="brand-name">동네결</div>
                     <div class="brand-tagline">인구 데이터로 찾는 나와 닮은 동네</div>
                 </div>
             </div>
@@ -2019,7 +2031,7 @@ def main():
 
     st.divider()
     st.caption(
-        "공주를 부탁해 · 공개된 행정동 연령별 집계 인구와 시군구 경계를 사용합니다. "
+        "동네결 · 공개된 행정동 연령별 집계 인구와 시군구 경계를 사용합니다. "
         "개인정보를 수집하거나 저장하지 않습니다."
     )
     st.markdown(
