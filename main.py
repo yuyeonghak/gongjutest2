@@ -102,7 +102,7 @@ AGEING_COLORS = ["#FFF4E6", "#FDD8B3", "#F5A36C", "#D95F4B", "#7F1D1D"]
 
 
 st.set_page_config(
-    page_title="동네결 | 나와 닮은 지역 찾기",
+    page_title="공주를 부탁해 | 나와 닮은 지역 찾기",
     page_icon="💗",
     layout="wide",
     initial_sidebar_state="collapsed",
@@ -1095,7 +1095,7 @@ def render_brand():
             <div class="brand-wrap">
                 <div class="brand-mark">♥</div>
                 <div>
-                    <div class="brand-name">동네결</div>
+                    <div class="brand-name">공주를 부탁해</div>
                     <div class="brand-tagline">인구 데이터로 찾는 나와 닮은 동네</div>
                 </div>
             </div>
